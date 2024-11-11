@@ -1,0 +1,5 @@
+[files]
+extend-exclude = [
+]
+[default]
+extend-ignore-identifiers-re = ["ehr", "PN", "Information", "HOM"]
