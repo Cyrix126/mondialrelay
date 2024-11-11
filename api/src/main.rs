@@ -19,7 +19,7 @@ struct AppState {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
-    let config: Config = confy::load_path("/etc/mondialrelay_api/config.toml")?;
+    let config: Config = confy::load_path("/etc/mondialrelay-api/config.toml")?;
     let pool = Pool::builder(deadpool_diesel::Manager::new(
         config.db_uri.as_str(),
         deadpool_diesel::Runtime::Tokio1,
