@@ -4,7 +4,7 @@ use axum::{
     Json,
 };
 use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use tracing::{debug, warn};
 use url::Url;
 use xsd_parser::generator::validator::Validate;
@@ -25,20 +25,20 @@ use crate::{
     response::ShipmentCreationResponseType,
     AppState,
 };
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct NewShipment {
-    id_order: u32,
+    pub id_order: u32,
     // should be a variant
-    delivery_mode: String,
+    pub delivery_mode: String,
     // relay, or Auto if no relay used
-    delivery_location: Option<String>,
-    delivery_instructions: Option<String>,
+    pub delivery_location: Option<String>,
+    pub delivery_instructions: Option<String>,
     // cm
-    length: u32,
-    width: u32,
-    depth: u32,
-    weight: u32,
-    recipient_details: AddressType,
+    pub length: u32,
+    pub width: u32,
+    pub depth: u32,
+    pub weight: u32,
+    pub recipient_details: AddressType,
 }
 
 // create a shipment
@@ -48,6 +48,7 @@ pub async fn shipment(
     Json(data): Json<NewShipment>,
 ) -> Result<impl IntoResponse, AppError> {
     debug!("Serving request for new shipment...");
+    dbg!("new shipment: {:?}", &data);
     // construct the request
     let shipment = ShipmentCreationRequest {
         context: state
@@ -109,14 +110,25 @@ pub async fn shipment(
     shipment.validate().map_err(AppError::Xml)?;
 
     // convert to xml
-    let xml = yaserde::ser::to_string(&shipment).expect("invalid UTF-8");
+    let xml = yaserde::ser::to_string_with_config(
+        &shipment,
+        &yaserde::ser::Config {
+            perform_indent: true,
+            write_document_declaration: true,
+            indent_string: None,
+        },
+    )
+    .expect("invalid UTF-8");
+    dbg!("new shipment in xml: {}", &xml);
     // send request
     let url = if state.config.test {
         "https://connect-api-sandbox.mondialrelay.com/api/shipment"
     } else {
         "https://connect-api.mondialrelay.com/api/shipment"
     };
-    let resp_xml = state.client.get(url).body(xml).send().await?.text().await?;
+    let resp = state.client.post(url).body(xml).send().await?;
+    dbg!(&resp);
+    let resp_xml = resp.text().await?;
     debug!("response received:\n{}", &resp_xml);
     let resp =
         yaserde::de::from_str::<ShipmentCreationResponseType>(&resp_xml).map_err(AppError::Xml)?;
