@@ -49,6 +49,8 @@ dotenv = "0.15"
 diesel_migrations = {version="2.2", features=["postgres"]}
 deadpool-diesel = {version="0.6", features=["postgres"]}
 chrono = "0.4"
+[dev-dependencies]
+axum-test = "16.3"
 
 [features]
 default=[]

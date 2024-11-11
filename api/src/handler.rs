@@ -48,7 +48,6 @@ pub async fn shipment(
     Json(data): Json<NewShipment>,
 ) -> Result<impl IntoResponse, AppError> {
     debug!("Serving request for new shipment...");
-    dbg!("new shipment: {:?}", &data);
     // construct the request
     let shipment = ShipmentCreationRequest {
         context: state
@@ -114,21 +113,25 @@ pub async fn shipment(
         &shipment,
         &yaserde::ser::Config {
             perform_indent: true,
-            write_document_declaration: true,
-            indent_string: None,
+            ..Default::default()
         },
     )
     .expect("invalid UTF-8");
-    dbg!("new shipment in xml: {}", &xml);
     // send request
     let url = if state.config.test {
         "https://connect-api-sandbox.mondialrelay.com/api/shipment"
     } else {
         "https://connect-api.mondialrelay.com/api/shipment"
     };
-    let resp = state.client.post(url).body(xml).send().await?;
-    dbg!(&resp);
-    let resp_xml = resp.text().await?;
+    debug!("sending request:\n{xml}");
+    let resp_xml = state
+        .client
+        .post(url)
+        .body(xml)
+        .send()
+        .await?
+        .text()
+        .await?;
     debug!("response received:\n{}", &resp_xml);
     let resp =
         yaserde::de::from_str::<ShipmentCreationResponseType>(&resp_xml).map_err(AppError::Xml)?;

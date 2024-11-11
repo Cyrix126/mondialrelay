@@ -19,7 +19,7 @@ pub mod response;
 #[derive(Clone)]
 pub struct AppState {
     // Configuration that the program will run with.
-    // roadmap could include allowing to use command line args and environnements variable.
+    // roadmap could include allowing to use command line args and environments variable.
     pub config: Config,
     // Database pool connections
     pub pool: Pool,

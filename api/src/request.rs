@@ -9,15 +9,14 @@ use yaserde::{YaDeserialize, YaSerialize};
 pub type ShipmentCreationRequest = ShipmentCreationRequestType;
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns" = "http://www.example.org/Request"})]
 pub struct ShipmentCreationRequestType {
-    #[yaserde(prefix = "tns", rename = "Context")]
+    #[yaserde(rename = "Context")]
     pub context: ContextType,
 
-    #[yaserde(prefix = "tns", rename = "OutputOptions")]
+    #[yaserde(rename = "OutputOptions")]
     pub output_options: OutputOptionsType,
 
-    #[yaserde(prefix = "tns", rename = "ShipmentsList")]
+    #[yaserde(rename = "ShipmentsList")]
     pub shipments_list: ShipmentsListType,
 }
 
@@ -31,36 +30,35 @@ impl Validate for ShipmentCreationRequestType {
 }
 
 #[derive(Default, Clone, PartialEq, Debug, YaDeserialize, YaSerialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns" = "http://www.example.org/Request"})]
 pub struct ContextType {
     // The user name of the client who calls the
     // service operation. Will be used for
     // authentication. The user name will be provided
     // by MondialRelay.
-    #[yaserde(prefix = "tns", rename = "Login")]
+    #[yaserde(rename = "Login")]
     pub login: String,
 
     // The password of the client who calls the service
     // operation. Will be used for authentication. The
     // password will be provided by MondialRelay.
-    #[yaserde(prefix = "tns", rename = "Password")]
+    #[yaserde(rename = "Password")]
     pub password: String,
 
     // The Customer Id of the client who calls the
     // service operation. Will be used for
     // authentication. The customerId will be provided
     // by MondialRelay.
-    #[yaserde(prefix = "tns", rename = "CustomerId")]
+    #[yaserde(rename = "CustomerId")]
     pub customer_id: context_type::CustomerIdType,
 
     // The culture that will be used to process the
     // request and produce the output expected format :
     // en-US
-    #[yaserde(prefix = "tns", rename = "Culture")]
+    #[yaserde(rename = "Culture")]
     pub culture: context_type::CultureType,
 
     // The reference of the API version.
-    #[yaserde(prefix = "tns", rename = "VersionAPI")]
+    #[yaserde(rename = "VersionAPI")]
     pub version_api: context_type::VersionAPIType,
 }
 
@@ -108,15 +106,14 @@ pub mod context_type {
 }
 
 #[derive(Default, Clone, PartialEq, Debug, YaDeserialize, YaSerialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns" = "http://www.example.org/Request"})]
 pub struct OutputOptionsType {
     // The printer model that will receive the ZPL
     // code. Bellow the model list of compatible
     // printers:
-    #[yaserde(prefix = "tns", rename = "OutputFormat")]
+    #[yaserde(rename = "OutputFormat")]
     pub output_format: output_options_type::OutputFormatType,
 
-    #[yaserde(prefix = "tns", rename = "OutputType")]
+    #[yaserde(rename = "OutputType")]
     pub output_type: output_options_type::OutputTypeType,
 }
 
@@ -144,57 +141,55 @@ pub mod output_options_type {
 }
 
 #[derive(Default, Clone, PartialEq, Debug, YaDeserialize, YaSerialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns" = "http://example.org/Request"})]
 pub struct ShipmentsListType {
-    #[yaserde(prefix = "tns", rename = "Shipment")]
+    #[yaserde(rename = "Shipment")]
     pub shipment: Vec<ShipmentType>,
 }
 
 impl Validate for ShipmentsListType {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns" = "http://example.org/Request"})]
 pub struct ShipmentType {
     // Customer internal order reference of the shipped
     // content
-    #[yaserde(prefix = "tns", rename = "OrderNo")]
+    #[yaserde(rename = "OrderNo")]
     pub order_no: Option<shipment_type::OrderNoType>,
 
-    #[yaserde(prefix = "tns", rename = "CustomerNo")]
+    #[yaserde(rename = "CustomerNo")]
     pub customer_no: Option<shipment_type::CustomerNoType>,
 
     // Number of parcels included in the shipment, this
     // number has to be coherent with the delivery and
     // the collection mode selected
-    #[yaserde(prefix = "tns", rename = "ParcelCount")]
+    #[yaserde(rename = "ParcelCount")]
     pub parcel_count: shipment_type::ParcelCountType,
 
     // Value of the content
-    #[yaserde(prefix = "tns", rename = "ShipmentValue")]
+    #[yaserde(rename = "ShipmentValue")]
     pub shipment_value: Option<MonetaryAmountType>,
     // returns parcel
-    #[yaserde(prefix = "tns", rename = "Options")]
+    #[yaserde(rename = "Options")]
     pub options: Option<OptionListType>,
 
-    #[yaserde(prefix = "tns", rename = "DeliveryMode")]
+    #[yaserde(rename = "DeliveryMode")]
     pub delivery_mode: ProductConfigurationType,
 
-    #[yaserde(prefix = "tns", rename = "CollectionMode")]
+    #[yaserde(rename = "CollectionMode")]
     pub collection_mode: ProductConfigurationType,
 
     // List of parcels included in the shipment
-    #[yaserde(prefix = "tns", rename = "Parcels")]
+    #[yaserde(rename = "Parcels")]
     pub parcels: ParcelListType,
 
-    #[yaserde(prefix = "tns", rename = "DeliveryInstruction")]
+    #[yaserde(rename = "DeliveryInstruction")]
     pub delivery_instruction: Option<shipment_type::DeliveryInstructionType>,
 
     // Informations about the sender of the parcel
-    #[yaserde(prefix = "tns", rename = "Sender")]
+    #[yaserde(rename = "Sender")]
     pub sender: SenderDetailsType,
 
     // Informations about the recipient of the parcel
-    #[yaserde(prefix = "tns", rename = "Recipient")]
+    #[yaserde(rename = "Recipient")]
     pub recipient: RecipientDetailsType,
 }
 
@@ -249,7 +244,6 @@ pub mod shipment_type {
 }
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns" = "http://example.org/Request"})]
 pub struct MonetaryAmountType {
     // Currency of the amount
     #[yaserde(attribute = true, rename = "Currency")]
@@ -262,16 +256,14 @@ pub struct MonetaryAmountType {
 impl Validate for MonetaryAmountType {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns" = "http://example.org/Request"})]
 pub struct OptionListType {
-    #[yaserde(prefix = "tns", rename = "Option")]
+    #[yaserde(rename = "Option")]
     pub option: Vec<KeyValueType>,
 }
 
 impl Validate for OptionListType {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns" = "http://example.org/Request"})]
 pub struct KeyValueType {
     #[yaserde(attribute = true, rename = "Key")]
     pub key: Option<String>,
@@ -283,7 +275,6 @@ pub struct KeyValueType {
 impl Validate for KeyValueType {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns" = "http://example.org/Request"})]
 pub struct ProductConfigurationType {
     // Collection
     // CCC : Merchant collection
@@ -311,40 +302,38 @@ pub struct ProductConfigurationType {
 impl Validate for ProductConfigurationType {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns" = "http://example.org/Request"})]
 pub struct ParcelListType {
     // each parcel of the shipment will be described with an element
-    #[yaserde(prefix = "tns", rename = "Parcel")]
+    #[yaserde(rename = "Parcel")]
     pub parcel: Vec<ParcelType>,
 }
 
 impl Validate for ParcelListType {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns" = "http://example.org/Request"})]
 pub struct ParcelType {
     // A brief description of the parcel content
-    #[yaserde(prefix = "tns", rename = "Content")]
+    #[yaserde(rename = "Content")]
     pub content: Option<parcel_type::ContentType>,
 
     // The length of the parcel (in cm) , unit has to be specified in the unit
     // attribute = true
-    #[yaserde(prefix = "tns", rename = "Length")]
+    #[yaserde(rename = "Length")]
     pub length: MeasureAmountType,
 
     // The width of the parcel (in cm) , unit has to be specified in the unit
     // attribute = true
-    #[yaserde(prefix = "tns", rename = "Width")]
+    #[yaserde(rename = "Width")]
     pub width: MeasureAmountType,
 
     // The depth of the parcel (in cm) , unit has to be specified in the unit
     // attribute = true
-    #[yaserde(prefix = "tns", rename = "Depth")]
+    #[yaserde(rename = "Depth")]
     pub depth: MeasureAmountType,
 
     // The weight of the parcel (in gram) , unit has to be specified in the unit
     // attribute = true
-    #[yaserde(prefix = "tns", rename = "Weight")]
+    #[yaserde(rename = "Weight")]
     pub weight: MeasureAmountType,
 }
 
@@ -367,7 +356,6 @@ pub mod parcel_type {
 }
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns" = "http://example.org/Request"})]
 pub struct MeasureAmountType {
     #[yaserde(attribute = true, rename = "Value")]
     pub value: f64,
@@ -379,81 +367,78 @@ pub struct MeasureAmountType {
 impl Validate for MeasureAmountType {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns" = "http://example.org/Request"})]
 pub struct SenderDetailsType {
-    #[yaserde(prefix = "tns", rename = "Address")]
+    #[yaserde(rename = "Address")]
     pub address: AddressType,
 }
 
 impl Validate for SenderDetailsType {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns" = "http://example.org/Request"})]
 pub struct RecipientDetailsType {
-    #[yaserde(prefix = "tns", rename = "Address")]
+    #[yaserde(rename = "Address")]
     pub address: AddressType,
 }
 
 impl Validate for RecipientDetailsType {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize, Deserialize, Serialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns" = "http://example.org/Request"})]
 pub struct AddressType {
     // If the address is a person, this field is for the person title (Mr, Ms,
     // Miss, ...)
-    #[yaserde(prefix = "tns", rename = "Title")]
+    #[yaserde(rename = "Title")]
     pub title: Option<address_type::TitleType>,
 
     // If the address is a person
-    #[yaserde(prefix = "tns", rename = "Firstname")]
+    #[yaserde(rename = "Firstname")]
     pub firstname: Option<address_type::FirstnameType>,
 
     // If the address is a person,
-    #[yaserde(prefix = "tns", rename = "Lastname")]
+    #[yaserde(rename = "Lastname")]
     pub lastname: Option<address_type::LastnameType>,
 
-    #[yaserde(prefix = "tns", rename = "Streetname")]
+    #[yaserde(rename = "Streetname")]
     pub streetname: String,
 
-    #[yaserde(prefix = "tns", rename = "HouseNo")]
+    #[yaserde(rename = "HouseNo")]
     pub house_no: Option<address_type::HouseNoType>,
 
     // The two letter country code of the addressee (e. g. DE, GB). For a
     // complete list of country code, refer to the standard ISO 3166-1-alpha-2
-    #[yaserde(prefix = "tns", rename = "CountryCode")]
+    #[yaserde(rename = "CountryCode")]
     pub country_code: address_type::CountryCodeType,
 
-    #[yaserde(prefix = "tns", rename = "PostCode")]
+    #[yaserde(rename = "PostCode")]
     pub post_code: address_type::PostCodeType,
 
-    #[yaserde(prefix = "tns", rename = "City")]
+    #[yaserde(rename = "City")]
     pub city: address_type::CityType,
 
-    #[yaserde(prefix = "tns", rename = "AddressAdd1")]
+    #[yaserde(rename = "AddressAdd1")]
     pub address_add_1: Option<address_type::AddressAdd1Type>,
 
     // Additional address information (e.g. Building, Floor).
-    #[yaserde(prefix = "tns", rename = "AddressAdd2")]
+    #[yaserde(rename = "AddressAdd2")]
     pub address_add_2: Option<address_type::AddressAdd2Type>,
 
     // Additional address information (e.g. locality
     // name).
-    #[yaserde(prefix = "tns", rename = "AddressAdd3")]
+    #[yaserde(rename = "AddressAdd3")]
     pub address_add_3: Option<address_type::AddressAdd3Type>,
 
     // The phone number of the addressee. Please
     // specify the area code (e.g. +33 for FRANCE).
-    #[yaserde(prefix = "tns", rename = "PhoneNo")]
+    #[yaserde(rename = "PhoneNo")]
     pub phone_no: address_type::PhoneNoType,
 
     // The mobile phone number of the addressee. Please
     // specify the area code (e.g. +33 for FRANCE).
-    #[yaserde(prefix = "tns", rename = "MobileNo")]
+    #[yaserde(rename = "MobileNo")]
     pub mobile_no: Option<address_type::MobileNoType>,
 
     // The email address of the addressee.
     // Format : xxxxxx@xxx.xx
-    #[yaserde(prefix = "tns", rename = "Email")]
+    #[yaserde(rename = "Email")]
     pub email: Option<address_type::EmailType>,
 }
 

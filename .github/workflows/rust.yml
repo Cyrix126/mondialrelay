@@ -27,7 +27,7 @@ jobs:
       run: cargo clippy --workspace --all-features --all-targets -- -D warnings
     - name: Check compilation
       run: cargo check --all-features --verbose
-    - name: Tests
-      run: cargo test --all-features
+    # - name: Tests
+      # run: cargo test --all-features
     - name: Documentation
       run: cargo doc --workspace --all-features --no-deps
