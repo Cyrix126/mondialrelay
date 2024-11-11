@@ -24,4 +24,7 @@ pub enum AppError {
     #[error(transparent)]
     #[status(axum::http::StatusCode::INTERNAL_SERVER_ERROR)]
     ReqwestError(#[from] reqwest::Error),
+    #[error("The order does not exist.")]
+    #[status(axum::http::StatusCode::BAD_REQUEST)]
+    OrderNotFound,
 }

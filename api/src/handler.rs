@@ -1,11 +1,19 @@
-use axum::{extract::State, response::IntoResponse, Json};
-use diesel::RunQueryDsl;
+use axum::{
+    extract::{Path, State},
+    response::IntoResponse,
+    Json,
+};
+use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use serde::Deserialize;
+use tracing::{debug, warn};
 use url::Url;
 use xsd_parser::generator::validator::Validate;
 
 use crate::{
-    db::{model::Shipment, schema::shipments},
+    db::{
+        model::Shipment,
+        schema::shipments::{self},
+    },
     error::AppError,
     request::{
         output_options_type::{OutputFormatType, OutputTypeType},
@@ -39,6 +47,7 @@ pub async fn shipment(
     State(state): State<AppState>,
     Json(data): Json<NewShipment>,
 ) -> Result<impl IntoResponse, AppError> {
+    debug!("Serving request for new shipment...");
     // construct the request
     let shipment = ShipmentCreationRequest {
         context: state
@@ -108,7 +117,7 @@ pub async fn shipment(
         "https://connect-api.mondialrelay.com/api/shipment"
     };
     let resp_xml = state.client.get(url).body(xml).send().await?.text().await?;
-    dbg!(&resp_xml);
+    debug!("response received:\n{}", &resp_xml);
     let resp =
         yaserde::de::from_str::<ShipmentCreationResponseType>(&resp_xml).map_err(AppError::Xml)?;
     // check errors/warning in xml
@@ -145,5 +154,38 @@ pub async fn shipment(
         .1
         .to_string();
 
+    debug!("Returning tracking id.");
     Ok(tracking)
+}
+/// returns label url for an order.
+/// There can be multiple label for an order if multiple shipments has been created for one order.
+#[axum::debug_handler]
+pub async fn label(
+    State(state): State<AppState>,
+    Path(id_order): Path<u32>,
+) -> Result<impl IntoResponse, AppError> {
+    use crate::db::schema::shipments::dsl::*; // get url from order_id in db
+
+    debug!("handling request \"Label\" for order n°{}", id_order);
+    let conn = state.pool.get().await?;
+    let labels = conn
+        .interact(move |conn| {
+            Ok::<Vec<String>, AppError>(
+                shipments
+                    .filter(order_id.eq(id_order as i32))
+                    .select(label_url)
+                    .load(conn)?,
+            )
+        })
+        .await??;
+    // return url
+    if labels.is_empty() {
+        warn!(
+            "order n°{} label was requested but order does not exist !",
+            id_order
+        );
+        return Err(AppError::OrderNotFound);
+    }
+    debug!("Returning label(s) for order n°{}", id_order);
+    Ok(Json(labels))
 }
