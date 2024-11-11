@@ -49,7 +49,7 @@ impl Default for Config {
     // default values will use test instance for mondialrelay
     fn default() -> Self {
         Self {
-            db_uri: Url::parse("postgresql:://user@127.0.0.1:5432/mydb").unwrap(),
+            db_uri: Url::parse("postgresql://user@127.0.0.1:5432/mydb").unwrap(),
             db_pass_path: PathBuf::from("name_api/db/user"),
             listen_port: 10200,
             brand_id: String::from("BDTEST"),
