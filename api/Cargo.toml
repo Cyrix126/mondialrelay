@@ -2,7 +2,13 @@
 name = "mondialrelay-api"
 version = "0.1.0"
 edition = "2021"
+[lib]
+name = "mondialrelay_api_lib"
+path = "src/lib.rs"
 
+[[bin]]
+name = "mondialrelay-api-server"
+path = "src/main.rs"
 [dependencies]
 # Clients API
 reqwest = {version="0.12", default-features=false}
