@@ -8,7 +8,6 @@ use reqwest::{
     header::{self, ACCEPT, CONTENT_TYPE},
     Client, ClientBuilder,
 };
-use std::path::Path;
 
 pub mod config;
 pub mod db;
@@ -29,8 +28,7 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub async fn new(path_config: impl AsRef<Path>) -> Result<Self, Box<dyn std::error::Error>> {
-        let config: Config = confy::load_path(path_config)?;
+    pub async fn new(config: Config) -> Result<Self, Box<dyn std::error::Error>> {
         let mut db_uri = config.db_uri.clone();
         db_uri
             .set_password(Some(
