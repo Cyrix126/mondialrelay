@@ -3,9 +3,9 @@ use std::{error::Error, path::PathBuf};
 use url::Url;
 
 use crate::request::{
-    address_type::CountryCodeType,
-    context_type::{CultureType, CustomerIdType, VersionAPIType},
-    AddressType, ContextType,
+    address_type::CountryCode,
+    context_type::{Culture, CustomerId, VersionAPI},
+    Address, Context,
 };
 
 #[derive(Deserialize, Serialize, Clone)]
@@ -24,13 +24,13 @@ pub struct Config {
     // Mondial Relay label output: A4, A5, 10x15
     pub format: String,
     // sender details
-    pub address_sender: Address,
+    pub address_sender: AddressBusiness,
     // are we in test mode ?
     pub test: bool,
 }
 
-#[derive(Deserialize, Serialize, Clone, Default)]
-pub struct Address {
+#[derive(Deserialize, Serialize, Clone, Default, Debug)]
+pub struct AddressBusiness {
     pub name_business: String,
     pub streetname: String,
     pub house_nb: u32,
@@ -58,14 +58,14 @@ impl Default for Config {
             culture: String::from("fr-FR"),
             format: "A4".to_string(),
             // todo example address
-            address_sender: Address::default(),
+            address_sender: AddressBusiness::default(),
             test: true,
         }
     }
 }
 
 impl Config {
-    pub fn context_api_mondialrelay(&self) -> Result<ContextType, Box<dyn Error>> {
+    pub fn context_api_mondialrelay(&self) -> Result<Context, Box<dyn Error>> {
         let brand_id = if self.test { "BDTEST" } else { &self.brand_id };
         let login = [brand_id, "@business-api.mondialrelay.com"].concat();
         let pass_path = if self.test {
@@ -73,35 +73,33 @@ impl Config {
         } else {
             &self.password_path
         };
-        Ok(ContextType {
+        Ok(Context {
             login,
             password: get_pass::get_password(pass_path)?,
-            customer_id: CustomerIdType(self.brand_id.clone()),
-            culture: CultureType(self.culture.clone()),
-            version_api: VersionAPIType("1.0".to_string()),
+            customer_id: CustomerId(self.brand_id.clone()),
+            culture: Culture(self.culture.clone()),
+            version_api: VersionAPI("1.0".to_string()),
         })
     }
-    pub fn sender_address(&self) -> AddressType {
+    pub fn sender_address(&self) -> Address {
         let adr = self.address_sender.clone();
-        AddressType {
+        Address {
             title: None,
             firstname: None,
             lastname: None,
             streetname: adr.streetname,
-            house_no: Some(crate::request::address_type::HouseNoType(
+            house_no: Some(crate::request::address_type::HouseNo(
                 adr.house_nb.to_string(),
             )),
-            country_code: CountryCodeType(adr.country_code),
-            post_code: crate::request::address_type::PostCodeType(adr.post_code),
-            city: crate::request::address_type::CityType(adr.city),
-            address_add_1: Some(crate::request::address_type::AddressAdd1Type(
-                adr.name_business,
-            )),
+            country_code: CountryCode(adr.country_code),
+            post_code: crate::request::address_type::PostCode(adr.post_code),
+            city: crate::request::address_type::City(adr.city),
+            address_add_1: Some(crate::request::address_type::AddressAdd1(adr.name_business)),
             address_add_2: None,
             address_add_3: None,
-            phone_no: crate::request::address_type::PhoneNoType(adr.phone_no),
+            phone_no: crate::request::address_type::PhoneNo(adr.phone_no),
             mobile_no: None,
-            email: Some(crate::request::address_type::EmailType(adr.email)),
+            email: Some(crate::request::address_type::Email(adr.email)),
         }
     }
 }

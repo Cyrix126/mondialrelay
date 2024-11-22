@@ -17,7 +17,7 @@ pub enum AppError {
     #[error("Misconfigured cover API on server side")]
     #[status(axum::http::StatusCode::INTERNAL_SERVER_ERROR)]
     Conf,
-    #[error("Request xml content is not valid from the mondial relay schema")]
+    #[error("Request xml content is not valid from the mondial relay schema: {0}")]
     #[status(axum::http::StatusCode::INTERNAL_SERVER_ERROR)]
     Xml(String),
     /// The API response status code is an error.
@@ -27,4 +27,7 @@ pub enum AppError {
     #[error("The order does not exist.")]
     #[status(axum::http::StatusCode::BAD_REQUEST)]
     OrderNotFound,
+    #[error("The address is incorrect: {0}")]
+    #[status(axum::http::StatusCode::BAD_REQUEST)]
+    BadAddress(String),
 }

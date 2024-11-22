@@ -4,48 +4,48 @@ use xsd_macro_utils::{UtilsDefaultSerde, UtilsTupleIo};
 use xsd_parser::generator::validator::Validate;
 use yaserde::{YaDeserialize, YaSerialize};
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns"= "http://www.example.org/Response"})]
-pub struct ContextType {
+#[yaserde(namespaces = {"xsi" = "http://www.w3.org/2001/XMLSchema-instance", "xsd" = "http://www.w3.org/2001/XMLSchema", "" = "http://www.example.org/Request"})]
+pub struct Context {
     // The user name of the client who calls the
     // service operation. Will be used for
     // authentication. The user name will be provided
     // by MondialRelay.
-    #[yaserde(prefix = "tns", rename = "Login")]
+    #[yaserde(rename = "Login")]
     pub login: String,
 
     // The password of the client who calls the service
     // operation. Will be used for authentication. The
     // password will be provided by MondialRelay.
-    #[yaserde(prefix = "tns", rename = "Password")]
+    #[yaserde(rename = "Password")]
     pub password: String,
 
     // The Customer Id of the client who calls the
     // service operation. Will be used for
     // authentication. The customerId will be provided
     // by MondialRelay.
-    #[yaserde(prefix = "tns", rename = "CustomerId")]
-    pub customer_id: context_type::CustomerIdType,
+    #[yaserde(rename = "CustomerId")]
+    pub customer_id: context_type::CustomerId,
 
     // The culture that will be used to process the
     // request and produce the output expected format :
     // en-US
-    #[yaserde(prefix = "tns", rename = "Culture")]
-    pub culture: context_type::CultureType,
+    #[yaserde(rename = "Culture")]
+    pub culture: context_type::Culture,
 
     // The reference of the API version.
-    #[yaserde(prefix = "tns", rename = "VersionAPI")]
-    pub version_api: context_type::VersionAPIType,
+    #[yaserde(rename = "VersionAPI")]
+    pub version_api: context_type::VersionAPI,
 }
 
-impl Validate for ContextType {}
+impl Validate for Context {}
 
 pub mod context_type {
     use super::*;
 
     #[derive(Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde)]
-    pub struct CustomerIdType(pub String);
+    pub struct CustomerId(pub String);
 
-    impl Validate for CustomerIdType {
+    impl Validate for CustomerId {
         fn validate(&self) -> Result<(), String> {
             #[allow(clippy::len_zero)]
             if self.0.len() < 2 {
@@ -59,9 +59,9 @@ pub mod context_type {
     }
 
     #[derive(Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde)]
-    pub struct CultureType(pub String);
+    pub struct Culture(pub String);
 
-    impl Validate for CultureType {
+    impl Validate for Culture {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() != 5 {
                 return Err(format!(
@@ -74,69 +74,65 @@ pub mod context_type {
     }
 
     #[derive(Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde)]
-    pub struct VersionAPIType(pub String);
+    pub struct VersionAPI(pub String);
 
-    impl Validate for VersionAPIType {}
+    impl Validate for VersionAPI {}
 }
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns"= "http://www.example.org/Response"})]
-pub struct OutputOptionsType {
+pub struct OutputOptions {
     // The printer model that will receive the ZPL
     // code. Bellow the model list of compatible
     // printers:
-    #[yaserde(prefix = "tns", rename = "OutputFormat")]
-    pub output_format: output_options_type::OutputFormatType,
+    #[yaserde(rename = "OutputFormat")]
+    pub output_format: output_options_type::OutputFormat,
 
-    #[yaserde(prefix = "tns", rename = "OutputType")]
-    pub output_type: output_options_type::OutputTypeType,
+    #[yaserde(rename = "Output")]
+    pub output_type: output_options_type::Output,
 }
 
-impl Validate for OutputOptionsType {}
+impl Validate for OutputOptions {}
 
 pub mod output_options_type {
     use super::*;
 
     #[derive(Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde)]
-    pub struct OutputFormatType(pub String);
+    pub struct OutputFormat(pub String);
 
-    impl Validate for OutputFormatType {}
+    impl Validate for OutputFormat {}
     #[derive(Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde)]
-    pub struct OutputTypeType(pub String);
+    pub struct Output(pub String);
 
-    impl Validate for OutputTypeType {}
+    impl Validate for Output {}
 }
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns"= "http://www.example.org/Response"})]
-pub struct ShipmentCreationResponseType {
-    #[yaserde(prefix = "tns", rename = "Context")]
-    pub context: ContextType,
+pub struct ShipmentCreationResponse {
+    #[yaserde(rename = "Context")]
+    pub context: Context,
 
-    #[yaserde(prefix = "tns", rename = "OutputOptions")]
-    pub output_options: OutputOptionsType,
+    #[yaserde(rename = "OutputOptions")]
+    pub output_options: OutputOptions,
 
-    #[yaserde(prefix = "tns", rename = "ShipmentsList")]
-    pub shipments_list: ShipmentsListType,
+    #[yaserde(rename = "ShipmentsList")]
+    pub shipments_list: ShipmentsList,
 
-    #[yaserde(prefix = "tns", rename = "StatusList")]
-    pub status_list: StatusListType,
+    #[yaserde(rename = "StatusList")]
+    pub status_list: StatusList,
 }
 
-impl Validate for ShipmentCreationResponseType {}
+impl Validate for ShipmentCreationResponse {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns"= "http://www.example.org/Response"})]
-pub struct StatusListType {
-    #[yaserde(prefix = "tns", rename = "Status")]
-    pub status: Vec<StatusType>,
+pub struct StatusList {
+    #[yaserde(rename = "Status")]
+    pub status: Vec<Status>,
 }
 
-impl Validate for StatusListType {}
+impl Validate for StatusList {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns"= "http://www.example.org/Response"})]
-pub struct StatusType {
+pub struct Status {
     #[yaserde(attribute = true, rename = "Code")]
     pub code: Option<String>,
 
@@ -147,95 +143,87 @@ pub struct StatusType {
     pub message: Option<String>,
 }
 
-impl Validate for StatusType {}
+impl Validate for Status {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns"= "http://www.example.org/Response"})]
-pub struct ShipmentsListType {
-    #[yaserde(prefix = "tns", rename = "Shipment")]
-    pub shipment: Vec<ShipmentOutputType>,
+pub struct ShipmentsList {
+    #[yaserde(rename = "Shipment")]
+    pub shipment: Vec<ShipmentOutput>,
 }
 
-impl Validate for ShipmentsListType {}
+impl Validate for ShipmentsList {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns"= "http://www.example.org/Response"})]
-pub struct ShipmentOutputType {
-    #[yaserde(prefix = "tns", rename = "LabelList")]
-    pub label_list: LabelListType,
+pub struct ShipmentOutput {
+    #[yaserde(rename = "LabelList")]
+    pub label_list: LabelList,
 }
 
-impl Validate for ShipmentOutputType {}
+impl Validate for ShipmentOutput {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns"= "http://www.example.org/Response"})]
-pub struct LabelListType {
-    #[yaserde(prefix = "tns", rename = "Label")]
-    pub label: LabelType,
+pub struct LabelList {
+    #[yaserde(rename = "Label")]
+    pub label: Label,
 }
 
-impl Validate for LabelListType {}
+impl Validate for LabelList {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns"= "http://www.example.org/Response"})]
-pub struct LabelType {
-    #[yaserde(prefix = "tns", rename = "RawContent")]
-    pub raw_content: LabelRawContentType,
+pub struct Label {
+    #[yaserde(rename = "RawContent")]
+    pub raw_content: LabelRawContent,
 
-    #[yaserde(prefix = "tns", rename = "Output")]
+    #[yaserde(rename = "Output")]
     pub output: String,
 }
 
-impl Validate for LabelType {}
+impl Validate for Label {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns"= "http://www.example.org/Response"})]
-pub struct LabelRawContentType {
-    #[yaserde(prefix = "tns", rename = "Parcel")]
-    pub parcel: ParcelInformationType,
+pub struct LabelRawContent {
+    #[yaserde(rename = "Parcel")]
+    pub parcel: ParcelInformation,
 
-    #[yaserde(prefix = "tns", rename = "Sender")]
-    pub sender: AddressType,
+    #[yaserde(rename = "Sender")]
+    pub sender: Address,
 
-    #[yaserde(prefix = "tns", rename = "Recipient")]
-    pub recipient: AddressType,
+    #[yaserde(rename = "Recipient")]
+    pub recipient: Address,
 
-    #[yaserde(prefix = "tns", rename = "LabelValues")]
-    pub label_values: Option<KeyValueType>,
+    #[yaserde(rename = "LabelValues")]
+    pub label_values: Option<KeyValue>,
 
-    #[yaserde(prefix = "tns", rename = "RoutingArguments")]
-    pub routing_arguments: Vec<RoutingArgumentType>,
+    #[yaserde(rename = "RoutingArguments")]
+    pub routing_arguments: Vec<RoutingArgument>,
 
-    #[yaserde(prefix = "tns", rename = "Barcodes")]
-    pub barcodes: BarcodesType,
+    #[yaserde(rename = "Barcodes")]
+    pub barcodes: Barcodes,
 }
 
-impl Validate for LabelRawContentType {}
+impl Validate for LabelRawContent {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns"= "http://www.example.org/Response"})]
-pub struct ParcelInformationType {
-    #[yaserde(prefix = "tns", rename = "Data")]
-    pub data: Vec<LabelParcelDataType>,
+pub struct ParcelInformation {
+    #[yaserde(rename = "Data")]
+    pub data: Vec<LabelParcelData>,
 }
 
-impl Validate for ParcelInformationType {}
+impl Validate for ParcelInformation {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns"= "http://www.example.org/Response"})]
-pub struct AddressType {
-    #[yaserde(prefix = "tns", rename = "AddressLines")]
-    pub address_lines: Vec<AddressLineType>,
+pub struct Address {
+    #[yaserde(rename = "AddressLines")]
+    pub address_lines: Vec<AddressLine>,
 
     #[yaserde(attribute = true, rename = "ZoneTitle")]
     pub zone_title: Option<String>,
 }
 
-impl Validate for AddressType {}
+impl Validate for Address {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns"= "http://www.example.org/Response"})]
-pub struct AddressLineType {
+pub struct AddressLine {
     #[yaserde(attribute = true, rename = "Order")]
     pub order: Option<i32>,
 
@@ -243,13 +231,12 @@ pub struct AddressLineType {
     pub address_line: Option<String>,
 }
 
-impl Validate for AddressLineType {}
+impl Validate for AddressLine {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns"= "http://www.example.org/Response"})]
-pub struct RoutingArgumentType {
-    #[yaserde(prefix = "tns", rename = "RoutingArgumentLines")]
-    pub routing_argument_lines: Vec<RoutingArgumentLineType>,
+pub struct RoutingArgument {
+    #[yaserde(rename = "RoutingArgumentLines")]
+    pub routing_argument_lines: Vec<RoutingArgumentLine>,
 
     #[yaserde(attribute = true, rename = "CarrierCode")]
     pub carrier_code: Option<String>,
@@ -258,23 +245,21 @@ pub struct RoutingArgumentType {
     pub role: Option<String>,
 }
 
-impl Validate for RoutingArgumentType {}
+impl Validate for RoutingArgument {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns"= "http://www.example.org/Response"})]
-pub struct RoutingArgumentLineType {
-    #[yaserde(prefix = "tns", rename = "Order")]
+pub struct RoutingArgumentLine {
+    #[yaserde(rename = "Order")]
     pub order: i32,
 
-    #[yaserde(prefix = "tns", rename = "RoutingArgumentLine")]
-    pub routing_argument_line: KeyValueType,
+    #[yaserde(rename = "RoutingArgumentLine")]
+    pub routing_argument_line: KeyValue,
 }
 
-impl Validate for RoutingArgumentLineType {}
+impl Validate for RoutingArgumentLine {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns"= "http://www.example.org/Response"})]
-pub struct KeyValueType {
+pub struct KeyValue {
     #[yaserde(attribute = true, rename = "Key")]
     pub key: Option<String>,
 
@@ -282,21 +267,19 @@ pub struct KeyValueType {
     pub value: Option<String>,
 }
 
-impl Validate for KeyValueType {}
+impl Validate for KeyValue {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns"= "http://www.example.org/Response"})]
-pub struct BarcodesType {
-    #[yaserde(prefix = "tns", rename = "Barcode")]
-    pub barcode: Vec<BarcodeType>,
+pub struct Barcodes {
+    #[yaserde(rename = "Barcode")]
+    pub barcode: Vec<Barcode>,
 }
 
-impl Validate for BarcodesType {}
+impl Validate for Barcodes {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns"= "http://www.example.org/Response"})]
-pub struct BarcodeType {
-    #[yaserde(attribute = true, rename = "Type")]
+pub struct Barcode {
+    #[yaserde(attribute = true, rename = "")]
     pub _type: Option<String>,
 
     #[yaserde(attribute = true, rename = "DisplayedValue")]
@@ -309,11 +292,10 @@ pub struct BarcodeType {
     pub carrier_code: Option<String>,
 }
 
-impl Validate for BarcodeType {}
+impl Validate for Barcode {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-#[yaserde(prefix = "tns", namespaces = {"tns"= "http://www.example.org/Response"})]
-pub struct LabelParcelDataType {
+pub struct LabelParcelData {
     #[yaserde(attribute = true, rename = "Order")]
     pub order: Option<i32>,
 
@@ -324,4 +306,4 @@ pub struct LabelParcelDataType {
     pub value: Option<String>,
 }
 
-impl Validate for LabelParcelDataType {}
+impl Validate for LabelParcelData {}

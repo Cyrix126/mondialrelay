@@ -50,9 +50,7 @@ impl AppState {
         );
         headers.insert(
             CONTENT_TYPE,
-            "text/value"
-                .parse()
-                .expect("header value should be correct"),
+            "text/xml".parse().expect("header value should be correct"),
         );
         let client = ClientBuilder::new()
             .default_headers(headers)

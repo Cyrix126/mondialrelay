@@ -7,15 +7,12 @@ use deadpool_diesel::postgres::Pool;
 use diesel::RunQueryDsl;
 use get_pass::get_password;
 use mondialrelay_api_lib::{
-    config::{Address, Config},
+    config::{AddressBusiness, Config},
     db::schema::shipments,
     handler::NewShipment,
     request::{
-        address_type::{
-            CityType, CountryCodeType, FirstnameType, HouseNoType, LastnameType, PostCodeType,
-            TitleType,
-        },
-        AddressType,
+        address_type::{City, CountryCode, Firstname, HouseNo, Lastname, PostCode, Title},
+        Address,
     },
     router, AppState,
 };
@@ -32,15 +29,15 @@ async fn correct_response() -> Result<(), Box<dyn std::error::Error>> {
         width: 10,
         depth: 5,
         weight: 150,
-        recipient_details: AddressType {
-            title: Some(TitleType("Mr".into())),
-            firstname: Some(FirstnameType("John".into())),
-            lastname: Some(LastnameType("LastName".into())),
+        recipient_details: Address {
+            title: Some(Title("Mr".into())),
+            firstname: Some(Firstname("John".into())),
+            lastname: Some(Lastname("LastName".into())),
             streetname: "RUE JEAN JACQUES ROUSSEAU".into(),
-            house_no: Some(HouseNoType("84".into())),
-            country_code: CountryCodeType("FR".into()),
-            post_code: PostCodeType("21000".into()),
-            city: CityType("Dijon".into()),
+            house_no: Some(HouseNo("84".into())),
+            country_code: CountryCode("FR".into()),
+            post_code: PostCode("21000".into()),
+            city: City("Dijon".into()),
             ..Default::default()
         },
     };
@@ -52,17 +49,16 @@ async fn correct_response() -> Result<(), Box<dyn std::error::Error>> {
     let config = Config {
         db_uri,
         db_pass_path: "mondialrelay/db/test".into(),
-        // not needed
-        password_path_test: PathBuf::from("mondialrelay/db/test"),
+        password_path_test: PathBuf::from("mondialrelay/test_api_key"),
         test: true,
-        address_sender: Address {
+        address_sender: AddressBusiness {
             name_business: "Dupond".to_string(),
             streetname: "Rue du Berceau".into(),
             house_nb: 5,
             country_code: "FR".into(),
-            post_code: "00000".into(),
+            post_code: "21000".into(),
             city: "Cityname".into(),
-            phone_no: "+3980000000".into(),
+            phone_no: "".into(),
             email: "test@example.com".into(),
         },
         ..Default::default()

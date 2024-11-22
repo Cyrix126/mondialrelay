@@ -6,21 +6,22 @@ use xsd_macro_utils::{UtilsDefaultSerde, UtilsTupleIo};
 use xsd_parser::generator::validator::Validate;
 use yaserde::{YaDeserialize, YaSerialize};
 
-pub type ShipmentCreationRequest = ShipmentCreationRequestType;
+use crate::{config::Config, error::AppError, handler::NewShipment};
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-pub struct ShipmentCreationRequestType {
+#[yaserde(namespaces = {"xsi" = "http://www.w3.org/2001/XMLSchema-instance", "xsd" = "http://www.w3.org/2001/XMLSchema", "" = "http://www.example.org/Request"})]
+pub struct ShipmentCreationRequest {
     #[yaserde(rename = "Context")]
-    pub context: ContextType,
+    pub context: Context,
 
     #[yaserde(rename = "OutputOptions")]
-    pub output_options: OutputOptionsType,
+    pub output_options: OutputOptions,
 
     #[yaserde(rename = "ShipmentsList")]
-    pub shipments_list: ShipmentsListType,
+    pub shipments_list: ShipmentsList,
 }
 
-impl Validate for ShipmentCreationRequestType {
+impl Validate for ShipmentCreationRequest {
     fn validate(&self) -> Result<(), String> {
         self.context.validate()?;
         self.output_options.validate()?;
@@ -29,8 +30,70 @@ impl Validate for ShipmentCreationRequestType {
     }
 }
 
+impl ShipmentCreationRequest {
+    pub fn new(config: Config, data: NewShipment) -> Result<Self, AppError> {
+        Ok(ShipmentCreationRequest {
+            context: config
+                .context_api_mondialrelay()
+                .map_err(|_| AppError::Conf)?,
+            output_options: OutputOptions {
+                output_format: output_options_type::OutputFormat(config.format.clone()),
+                output_type: output_options_type::OutputType("PdfUrl".to_string()),
+            },
+            shipments_list: ShipmentsList {
+                shipment: vec![Shipment {
+                    // MondialRelay doesn't need to know our customer id nor order id
+                    order_no: None,
+                    customer_no: None,
+                    parcel_count: shipment_type::ParcelCount(1),
+                    shipment_value: None,
+                    options: None,
+                    delivery_mode: ProductConfiguration {
+                        mode: data.delivery_mode,
+                        location: data.delivery_location,
+                    },
+                    collection_mode: ProductConfiguration {
+                        mode: "CCC".to_string(),
+                        location: None,
+                    },
+                    parcels: ParcelList {
+                        parcel: vec![Parcel {
+                            content: None,
+                            length: MeasureAmount {
+                                value: data.length as f64,
+                                unit: "cm".to_string(),
+                            },
+                            width: MeasureAmount {
+                                value: data.width as f64,
+                                unit: "cm".to_string(),
+                            },
+                            depth: MeasureAmount {
+                                value: data.depth as f64,
+                                unit: "cm".to_string(),
+                            },
+                            weight: MeasureAmount {
+                                value: data.weight as f64,
+                                unit: "gr".to_string(),
+                            },
+                        }],
+                    },
+                    delivery_instruction: data
+                        .delivery_instructions
+                        .map(shipment_type::DeliveryInstruction),
+                    sender: SenderDetails {
+                        address: config.sender_address(),
+                    },
+                    recipient: crate::request::RecipientDetails {
+                        address: data.recipient_details,
+                    },
+                }],
+            },
+        })
+    }
+}
+
 #[derive(Default, Clone, PartialEq, Debug, YaDeserialize, YaSerialize)]
-pub struct ContextType {
+pub struct Context {
     // The user name of the client who calls the
     // service operation. Will be used for
     // authentication. The user name will be provided
@@ -49,29 +112,29 @@ pub struct ContextType {
     // authentication. The customerId will be provided
     // by MondialRelay.
     #[yaserde(rename = "CustomerId")]
-    pub customer_id: context_type::CustomerIdType,
+    pub customer_id: context_type::CustomerId,
 
     // The culture that will be used to process the
     // request and produce the output expected format :
     // en-US
     #[yaserde(rename = "Culture")]
-    pub culture: context_type::CultureType,
+    pub culture: context_type::Culture,
 
     // The reference of the API version.
     #[yaserde(rename = "VersionAPI")]
-    pub version_api: context_type::VersionAPIType,
+    pub version_api: context_type::VersionAPI,
 }
 
-impl Validate for ContextType {}
+impl Validate for Context {}
 
 pub mod context_type {
 
     use super::*;
 
     #[derive(Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde)]
-    pub struct CustomerIdType(pub String);
+    pub struct CustomerId(pub String);
 
-    impl Validate for CustomerIdType {
+    impl Validate for CustomerId {
         fn validate(&self) -> Result<(), String> {
             #[allow(clippy::len_zero)]
             if self.0.len() < 2 {
@@ -85,9 +148,9 @@ pub mod context_type {
     }
 
     #[derive(Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde)]
-    pub struct CultureType(pub String);
+    pub struct Culture(pub String);
 
-    impl Validate for CultureType {
+    impl Validate for Culture {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() != 5 {
                 return Err(format!(
@@ -100,31 +163,31 @@ pub mod context_type {
     }
 
     #[derive(Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde)]
-    pub struct VersionAPIType(pub String);
+    pub struct VersionAPI(pub String);
 
-    impl Validate for VersionAPIType {}
+    impl Validate for VersionAPI {}
 }
 
 #[derive(Default, Clone, PartialEq, Debug, YaDeserialize, YaSerialize)]
-pub struct OutputOptionsType {
+pub struct OutputOptions {
     // The printer model that will receive the ZPL
     // code. Bellow the model list of compatible
     // printers:
     #[yaserde(rename = "OutputFormat")]
-    pub output_format: output_options_type::OutputFormatType,
+    pub output_format: output_options_type::OutputFormat,
 
     #[yaserde(rename = "OutputType")]
-    pub output_type: output_options_type::OutputTypeType,
+    pub output_type: output_options_type::OutputType,
 }
 
-impl Validate for OutputOptionsType {}
+impl Validate for OutputOptions {}
 
 pub mod output_options_type {
     use super::*;
 
     #[derive(Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde)]
-    pub struct OutputFormatType(pub String);
-    //The value depends on the outputType field:
+    pub struct OutputFormat(pub String);
+    //The value depends on the output field:
     // For PDF file label, set the size format expected. Actual
     // supported formats are ‘A4’, ‘A5’, ‘10x15’.
     // For printing language label (ZPL, IPL), set the printer
@@ -132,76 +195,76 @@ pub mod output_options_type {
     // ‘Monarch9855’, ‘MiniMonarch9416XL’. For any new
     // model, please send us the printer model specifications
 
-    impl Validate for OutputFormatType {}
+    impl Validate for OutputFormat {}
     #[derive(Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde)]
-    pub struct OutputTypeType(pub String);
+    pub struct OutputType(pub String);
     // The expected output format. Supported output format
     // list: ‘ZplCode’, ‘PdfUrl’, ‘IplCode’.
-    impl Validate for OutputTypeType {}
+    impl Validate for OutputType {}
 }
 
 #[derive(Default, Clone, PartialEq, Debug, YaDeserialize, YaSerialize)]
-pub struct ShipmentsListType {
+pub struct ShipmentsList {
     #[yaserde(rename = "Shipment")]
-    pub shipment: Vec<ShipmentType>,
+    pub shipment: Vec<Shipment>,
 }
 
-impl Validate for ShipmentsListType {}
+impl Validate for ShipmentsList {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-pub struct ShipmentType {
+pub struct Shipment {
     // Customer internal order reference of the shipped
     // content
     #[yaserde(rename = "OrderNo")]
-    pub order_no: Option<shipment_type::OrderNoType>,
+    pub order_no: Option<shipment_type::OrderNo>,
 
     #[yaserde(rename = "CustomerNo")]
-    pub customer_no: Option<shipment_type::CustomerNoType>,
+    pub customer_no: Option<shipment_type::CustomerNo>,
 
     // Number of parcels included in the shipment, this
     // number has to be coherent with the delivery and
     // the collection mode selected
     #[yaserde(rename = "ParcelCount")]
-    pub parcel_count: shipment_type::ParcelCountType,
+    pub parcel_count: shipment_type::ParcelCount,
 
     // Value of the content
     #[yaserde(rename = "ShipmentValue")]
-    pub shipment_value: Option<MonetaryAmountType>,
+    pub shipment_value: Option<MonetaryAmount>,
     // returns parcel
     #[yaserde(rename = "Options")]
-    pub options: Option<OptionListType>,
+    pub options: Option<OptionList>,
 
     #[yaserde(rename = "DeliveryMode")]
-    pub delivery_mode: ProductConfigurationType,
+    pub delivery_mode: ProductConfiguration,
 
     #[yaserde(rename = "CollectionMode")]
-    pub collection_mode: ProductConfigurationType,
+    pub collection_mode: ProductConfiguration,
 
     // List of parcels included in the shipment
     #[yaserde(rename = "Parcels")]
-    pub parcels: ParcelListType,
+    pub parcels: ParcelList,
 
     #[yaserde(rename = "DeliveryInstruction")]
-    pub delivery_instruction: Option<shipment_type::DeliveryInstructionType>,
+    pub delivery_instruction: Option<shipment_type::DeliveryInstruction>,
 
     // Informations about the sender of the parcel
     #[yaserde(rename = "Sender")]
-    pub sender: SenderDetailsType,
+    pub sender: SenderDetails,
 
     // Informations about the recipient of the parcel
     #[yaserde(rename = "Recipient")]
-    pub recipient: RecipientDetailsType,
+    pub recipient: RecipientDetails,
 }
 
-impl Validate for ShipmentType {}
+impl Validate for Shipment {}
 
 pub mod shipment_type {
     use super::*;
 
     #[derive(Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde)]
-    pub struct OrderNoType(pub String);
+    pub struct OrderNo(pub String);
 
-    impl Validate for OrderNoType {
+    impl Validate for OrderNo {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 15 {
                 return Err(format!("MaxLength validation error. \nExpected: 0 length <= 15 \nActual: 0 length == {}", self.0.len()));
@@ -211,9 +274,9 @@ pub mod shipment_type {
     }
 
     #[derive(Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde)]
-    pub struct CustomerNoType(pub String);
+    pub struct CustomerNo(pub String);
 
-    impl Validate for CustomerNoType {
+    impl Validate for CustomerNo {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 9 {
                 return Err(format!("MaxLength validation error. \nExpected: 0 length <= 9 \nActual: 0 length == {}", self.0.len()));
@@ -223,9 +286,9 @@ pub mod shipment_type {
     }
 
     #[derive(Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde)]
-    pub struct ParcelCountType(pub i32);
+    pub struct ParcelCount(pub i32);
 
-    impl Validate for ParcelCountType {
+    impl Validate for ParcelCount {
         fn validate(&self) -> Result<(), String> {
             if self.0 < "1".parse::<i32>().unwrap() {
                 return Err(format!("MinInclusive validation error: invalid value of 0! \nExpected: 0 >= 1.\nActual: 0 == {}", self.0));
@@ -238,13 +301,13 @@ pub mod shipment_type {
     }
 
     #[derive(Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde)]
-    pub struct DeliveryInstructionType(pub String);
+    pub struct DeliveryInstruction(pub String);
 
-    impl Validate for DeliveryInstructionType {}
+    impl Validate for DeliveryInstruction {}
 }
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-pub struct MonetaryAmountType {
+pub struct MonetaryAmount {
     // Currency of the amount
     #[yaserde(attribute = true, rename = "Currency")]
     pub currency: Option<String>,
@@ -253,18 +316,18 @@ pub struct MonetaryAmountType {
     pub amount: Option<f64>,
 }
 
-impl Validate for MonetaryAmountType {}
+impl Validate for MonetaryAmount {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-pub struct OptionListType {
+pub struct OptionList {
     #[yaserde(rename = "Option")]
-    pub option: Vec<KeyValueType>,
+    pub option: Vec<KeyValue>,
 }
 
-impl Validate for OptionListType {}
+impl Validate for OptionList {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-pub struct KeyValueType {
+pub struct KeyValue {
     #[yaserde(attribute = true, rename = "Key")]
     pub key: Option<String>,
 
@@ -272,10 +335,10 @@ pub struct KeyValueType {
     pub value: Option<String>,
 }
 
-impl Validate for KeyValueType {}
+impl Validate for KeyValue {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-pub struct ProductConfigurationType {
+pub struct ProductConfiguration {
     // Collection
     // CCC : Merchant collection
     // REL : Point Relais® collection
@@ -299,53 +362,53 @@ pub struct ProductConfigurationType {
     pub location: Option<String>,
 }
 
-impl Validate for ProductConfigurationType {}
+impl Validate for ProductConfiguration {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-pub struct ParcelListType {
+pub struct ParcelList {
     // each parcel of the shipment will be described with an element
     #[yaserde(rename = "Parcel")]
-    pub parcel: Vec<ParcelType>,
+    pub parcel: Vec<Parcel>,
 }
 
-impl Validate for ParcelListType {}
+impl Validate for ParcelList {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-pub struct ParcelType {
+pub struct Parcel {
     // A brief description of the parcel content
     #[yaserde(rename = "Content")]
-    pub content: Option<parcel_type::ContentType>,
+    pub content: Option<parcel_type::Content>,
 
     // The length of the parcel (in cm) , unit has to be specified in the unit
     // attribute = true
     #[yaserde(rename = "Length")]
-    pub length: MeasureAmountType,
+    pub length: MeasureAmount,
 
     // The width of the parcel (in cm) , unit has to be specified in the unit
     // attribute = true
     #[yaserde(rename = "Width")]
-    pub width: MeasureAmountType,
+    pub width: MeasureAmount,
 
     // The depth of the parcel (in cm) , unit has to be specified in the unit
     // attribute = true
     #[yaserde(rename = "Depth")]
-    pub depth: MeasureAmountType,
+    pub depth: MeasureAmount,
 
     // The weight of the parcel (in gram) , unit has to be specified in the unit
     // attribute = true
     #[yaserde(rename = "Weight")]
-    pub weight: MeasureAmountType,
+    pub weight: MeasureAmount,
 }
 
-impl Validate for ParcelType {}
+impl Validate for Parcel {}
 
 pub mod parcel_type {
     use super::*;
 
     #[derive(Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde)]
-    pub struct ContentType(pub String);
+    pub struct Content(pub String);
 
-    impl Validate for ContentType {
+    impl Validate for Content {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 40 {
                 return Err(format!("MaxLength validation error. \nExpected: 0 length <= 40 \nActual: 0 length == {}", self.0.len()));
@@ -356,7 +419,7 @@ pub mod parcel_type {
 }
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-pub struct MeasureAmountType {
+pub struct MeasureAmount {
     #[yaserde(attribute = true, rename = "Value")]
     pub value: f64,
 
@@ -364,85 +427,85 @@ pub struct MeasureAmountType {
     pub unit: String,
 }
 
-impl Validate for MeasureAmountType {}
+impl Validate for MeasureAmount {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-pub struct SenderDetailsType {
+pub struct SenderDetails {
     #[yaserde(rename = "Address")]
-    pub address: AddressType,
+    pub address: Address,
 }
 
-impl Validate for SenderDetailsType {}
+impl Validate for SenderDetails {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize)]
-pub struct RecipientDetailsType {
+pub struct RecipientDetails {
     #[yaserde(rename = "Address")]
-    pub address: AddressType,
+    pub address: Address,
 }
 
-impl Validate for RecipientDetailsType {}
+impl Validate for RecipientDetails {}
 
 #[derive(Default, Clone, PartialEq, Debug, YaSerialize, YaDeserialize, Deserialize, Serialize)]
-pub struct AddressType {
+pub struct Address {
     // If the address is a person, this field is for the person title (Mr, Ms,
     // Miss, ...)
     #[yaserde(rename = "Title")]
-    pub title: Option<address_type::TitleType>,
+    pub title: Option<address_type::Title>,
 
     // If the address is a person
     #[yaserde(rename = "Firstname")]
-    pub firstname: Option<address_type::FirstnameType>,
+    pub firstname: Option<address_type::Firstname>,
 
     // If the address is a person,
     #[yaserde(rename = "Lastname")]
-    pub lastname: Option<address_type::LastnameType>,
+    pub lastname: Option<address_type::Lastname>,
 
     #[yaserde(rename = "Streetname")]
     pub streetname: String,
 
     #[yaserde(rename = "HouseNo")]
-    pub house_no: Option<address_type::HouseNoType>,
+    pub house_no: Option<address_type::HouseNo>,
 
     // The two letter country code of the addressee (e. g. DE, GB). For a
     // complete list of country code, refer to the standard ISO 3166-1-alpha-2
     #[yaserde(rename = "CountryCode")]
-    pub country_code: address_type::CountryCodeType,
+    pub country_code: address_type::CountryCode,
 
     #[yaserde(rename = "PostCode")]
-    pub post_code: address_type::PostCodeType,
+    pub post_code: address_type::PostCode,
 
     #[yaserde(rename = "City")]
-    pub city: address_type::CityType,
+    pub city: address_type::City,
 
     #[yaserde(rename = "AddressAdd1")]
-    pub address_add_1: Option<address_type::AddressAdd1Type>,
+    pub address_add_1: Option<address_type::AddressAdd1>,
 
     // Additional address information (e.g. Building, Floor).
     #[yaserde(rename = "AddressAdd2")]
-    pub address_add_2: Option<address_type::AddressAdd2Type>,
+    pub address_add_2: Option<address_type::AddressAdd2>,
 
     // Additional address information (e.g. locality
     // name).
     #[yaserde(rename = "AddressAdd3")]
-    pub address_add_3: Option<address_type::AddressAdd3Type>,
+    pub address_add_3: Option<address_type::AddressAdd3>,
 
     // The phone number of the addressee. Please
     // specify the area code (e.g. +33 for FRANCE).
     #[yaserde(rename = "PhoneNo")]
-    pub phone_no: address_type::PhoneNoType,
+    pub phone_no: address_type::PhoneNo,
 
     // The mobile phone number of the addressee. Please
     // specify the area code (e.g. +33 for FRANCE).
     #[yaserde(rename = "MobileNo")]
-    pub mobile_no: Option<address_type::MobileNoType>,
+    pub mobile_no: Option<address_type::MobileNo>,
 
     // The email address of the addressee.
     // Format : xxxxxx@xxx.xx
     #[yaserde(rename = "Email")]
-    pub email: Option<address_type::EmailType>,
+    pub email: Option<address_type::Email>,
 }
 
-impl Validate for AddressType {}
+impl Validate for Address {}
 
 pub mod address_type {
     use super::*;
@@ -450,9 +513,9 @@ pub mod address_type {
     #[derive(
         Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde, Deserialize, Serialize,
     )]
-    pub struct TitleType(pub String);
+    pub struct Title(pub String);
 
-    impl Validate for TitleType {
+    impl Validate for Title {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 30 {
                 return Err(format!("MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}", self.0.len()));
@@ -464,9 +527,9 @@ pub mod address_type {
     #[derive(
         Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde, Deserialize, Serialize,
     )]
-    pub struct FirstnameType(pub String);
+    pub struct Firstname(pub String);
 
-    impl Validate for FirstnameType {
+    impl Validate for Firstname {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 30 {
                 return Err(format!("MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}", self.0.len()));
@@ -478,9 +541,9 @@ pub mod address_type {
     #[derive(
         Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde, Deserialize, Serialize,
     )]
-    pub struct LastnameType(pub String);
+    pub struct Lastname(pub String);
 
-    impl Validate for LastnameType {
+    impl Validate for Lastname {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 30 {
                 return Err(format!("MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}", self.0.len()));
@@ -492,13 +555,14 @@ pub mod address_type {
     #[derive(
         Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde, Deserialize, Serialize,
     )]
-    pub struct HouseNoType(pub String);
+    pub struct HouseNo(pub String);
 
-    impl Validate for HouseNoType {
+    impl Validate for HouseNo {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 10 {
                 return Err(format!("MaxLength validation error. \nExpected: 0 length <= 10 \nActual: 0 length == {}", self.0.len()));
             }
+            // check every street number possible for street ?
             Ok(())
         }
     }
@@ -506,9 +570,9 @@ pub mod address_type {
     #[derive(
         Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde, Deserialize, Serialize,
     )]
-    pub struct CountryCodeType(pub String);
+    pub struct CountryCode(pub String);
 
-    impl Validate for CountryCodeType {
+    impl Validate for CountryCode {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() != 2 {
                 return Err(format!(
@@ -516,6 +580,7 @@ pub mod address_type {
                     self.0.len()
                 ));
             }
+            // check every country code ?
             Ok(())
         }
     }
@@ -523,13 +588,14 @@ pub mod address_type {
     #[derive(
         Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde, Deserialize, Serialize,
     )]
-    pub struct PostCodeType(pub String);
+    pub struct PostCode(pub String);
 
-    impl Validate for PostCodeType {
+    impl Validate for PostCode {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 10 {
                 return Err(format!("MaxLength validation error. \nExpected: 0 length <= 10 \nActual: 0 length == {}", self.0.len()));
             }
+            // check every postal code ?
             Ok(())
         }
     }
@@ -537,9 +603,24 @@ pub mod address_type {
     #[derive(
         Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde, Deserialize, Serialize,
     )]
-    pub struct CityType(pub String);
+    pub struct City(pub String);
 
-    impl Validate for CityType {
+    impl Validate for City {
+        fn validate(&self) -> Result<(), String> {
+            if self.0.len() > 30 {
+                return Err(format!("MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}", self.0.len()));
+            }
+            // check that city correspond to postal code ?
+            Ok(())
+        }
+    }
+
+    #[derive(
+        Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde, Deserialize, Serialize,
+    )]
+    pub struct AddressAdd1(pub String);
+
+    impl Validate for AddressAdd1 {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 30 {
                 return Err(format!("MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}", self.0.len()));
@@ -551,9 +632,9 @@ pub mod address_type {
     #[derive(
         Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde, Deserialize, Serialize,
     )]
-    pub struct AddressAdd1Type(pub String);
+    pub struct AddressAdd2(pub String);
 
-    impl Validate for AddressAdd1Type {
+    impl Validate for AddressAdd2 {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 30 {
                 return Err(format!("MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}", self.0.len()));
@@ -565,9 +646,9 @@ pub mod address_type {
     #[derive(
         Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde, Deserialize, Serialize,
     )]
-    pub struct AddressAdd2Type(pub String);
+    pub struct AddressAdd3(pub String);
 
-    impl Validate for AddressAdd2Type {
+    impl Validate for AddressAdd3 {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 30 {
                 return Err(format!("MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}", self.0.len()));
@@ -579,23 +660,9 @@ pub mod address_type {
     #[derive(
         Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde, Deserialize, Serialize,
     )]
-    pub struct AddressAdd3Type(pub String);
+    pub struct PhoneNo(pub String);
 
-    impl Validate for AddressAdd3Type {
-        fn validate(&self) -> Result<(), String> {
-            if self.0.len() > 30 {
-                return Err(format!("MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}", self.0.len()));
-            }
-            Ok(())
-        }
-    }
-
-    #[derive(
-        Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde, Deserialize, Serialize,
-    )]
-    pub struct PhoneNoType(pub String);
-
-    impl Validate for PhoneNoType {
+    impl Validate for PhoneNo {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 20 {
                 return Err(format!("MaxLength validation error. \nExpected: 0 length <= 20 \nActual: 0 length == {}", self.0.len()));
@@ -607,9 +674,9 @@ pub mod address_type {
     #[derive(
         Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde, Deserialize, Serialize,
     )]
-    pub struct MobileNoType(pub String);
+    pub struct MobileNo(pub String);
 
-    impl Validate for MobileNoType {
+    impl Validate for MobileNo {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 20 {
                 return Err(format!("MaxLength validation error. \nExpected: 0 length <= 20 \nActual: 0 length == {}", self.0.len()));
@@ -621,9 +688,9 @@ pub mod address_type {
     #[derive(
         Default, Clone, PartialEq, Debug, UtilsTupleIo, UtilsDefaultSerde, Deserialize, Serialize,
     )]
-    pub struct EmailType(pub String);
+    pub struct Email(pub String);
 
-    impl Validate for EmailType {
+    impl Validate for Email {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 70 {
                 return Err(format!("MaxLength validation error. \nExpected: 0 length <= 70 \nActual: 0 length == {}", self.0.len()));

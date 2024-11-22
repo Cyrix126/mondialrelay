@@ -13,7 +13,6 @@ path = "src/main.rs"
 # Clients API
 reqwest = {version="0.12", default-features=false}
 ## XML
-### Need to use old version of yaserde to use xsd-* crates, upgrading has breaking changes.
 yaserde = {version="0.12", features=["derive"]}
 xsd-macro-utils = {git="https://github.com/Cyrix126/xsd-parser-rs"}
 xsd-parser = {git="https://github.com/Cyrix126/xsd-parser-rs"}

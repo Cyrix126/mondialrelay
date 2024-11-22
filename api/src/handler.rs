@@ -1,3 +1,5 @@
+// use std::{fs::File, io::Write};
+
 use axum::{
     extract::{Path, State},
     response::IntoResponse,
@@ -15,14 +17,8 @@ use crate::{
         schema::shipments::{self},
     },
     error::AppError,
-    request::{
-        output_options_type::{OutputFormatType, OutputTypeType},
-        shipment_type::{DeliveryInstructionType, ParcelCountType},
-        AddressType, MeasureAmountType, OutputOptionsType, ParcelListType, ParcelType,
-        ProductConfigurationType, SenderDetailsType, ShipmentCreationRequest, ShipmentType,
-        ShipmentsListType,
-    },
-    response::ShipmentCreationResponseType,
+    request::{Address, ShipmentCreationRequest},
+    response::ShipmentCreationResponse,
     AppState,
 };
 #[derive(Deserialize, Serialize, Debug)]
@@ -38,7 +34,7 @@ pub struct NewShipment {
     pub width: u32,
     pub depth: u32,
     pub weight: u32,
-    pub recipient_details: AddressType,
+    pub recipient_details: Address,
 }
 
 // create a shipment
@@ -48,64 +44,15 @@ pub async fn shipment(
     Json(data): Json<NewShipment>,
 ) -> Result<impl IntoResponse, AppError> {
     debug!("Serving request for new shipment...");
+    // validate NewShipment data,
+    data.recipient_details
+        .validate()
+        .map_err(AppError::BadAddress)?;
+    // save order id
+    let order_id = data.id_order;
     // construct the request
-    let shipment = ShipmentCreationRequest {
-        context: state
-            .config
-            .context_api_mondialrelay()
-            .map_err(|_| AppError::Conf)?,
-        output_options: OutputOptionsType {
-            output_format: OutputFormatType(state.config.format.clone()),
-            output_type: OutputTypeType("PdfUrl".to_string()),
-        },
-        shipments_list: ShipmentsListType {
-            shipment: vec![ShipmentType {
-                // MondialRelay doesn't need to know our customer id nor order id
-                order_no: None,
-                customer_no: None,
-                parcel_count: ParcelCountType(1),
-                shipment_value: None,
-                options: None,
-                delivery_mode: ProductConfigurationType {
-                    mode: data.delivery_mode,
-                    location: data.delivery_location,
-                },
-                collection_mode: ProductConfigurationType {
-                    mode: "CCC".to_string(),
-                    location: None,
-                },
-                parcels: ParcelListType {
-                    parcel: vec![ParcelType {
-                        content: None,
-                        length: MeasureAmountType {
-                            value: data.length as f64,
-                            unit: "cm".to_string(),
-                        },
-                        width: MeasureAmountType {
-                            value: data.width as f64,
-                            unit: "cm".to_string(),
-                        },
-                        depth: MeasureAmountType {
-                            value: data.depth as f64,
-                            unit: "cm".to_string(),
-                        },
-                        weight: MeasureAmountType {
-                            value: data.weight as f64,
-                            unit: "cm".to_string(),
-                        },
-                    }],
-                },
-                delivery_instruction: data.delivery_instructions.map(DeliveryInstructionType),
-                sender: SenderDetailsType {
-                    address: state.config.sender_address(),
-                },
-                recipient: crate::request::RecipientDetailsType {
-                    address: data.recipient_details,
-                },
-            }],
-        },
-    };
-    // validate
+    let shipment = ShipmentCreationRequest::new(state.config.clone(), data)?;
+    // validate shipment request, return simple error to client, debugged error to server
     shipment.validate().map_err(AppError::Xml)?;
 
     // convert to xml
@@ -123,7 +70,9 @@ pub async fn shipment(
     } else {
         "https://connect-api.mondialrelay.com/api/shipment"
     };
-    debug!("sending request:\n{xml}");
+    // debug response from test
+    // let mut buffer = File::create("request_generated.xml").unwrap();
+    // buffer.write_all(&xml.clone().into_bytes()).unwrap();
     let resp_xml = state
         .client
         .post(url)
@@ -134,7 +83,7 @@ pub async fn shipment(
         .await?;
     debug!("response received:\n{}", &resp_xml);
     let resp =
-        yaserde::de::from_str::<ShipmentCreationResponseType>(&resp_xml).map_err(AppError::Xml)?;
+        yaserde::de::from_str::<ShipmentCreationResponse>(&resp_xml).map_err(AppError::Xml)?;
     // check errors/warning in xml
     let label_url = resp
         .shipments_list
@@ -150,7 +99,7 @@ pub async fn shipment(
     // tracking id is included in url of label
     let conn = state.pool.get().await?;
     let shipment = Shipment {
-        order_id: data.id_order as i32,
+        order_id: order_id as i32,
         label_url: label_url.clone(),
         ..Default::default()
     };
