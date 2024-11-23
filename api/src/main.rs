@@ -1,5 +1,5 @@
 use axum::serve;
-use mondialrelay_api_lib::{router, AppState};
+use mondialrelay_api_lib::{AppState, router};
 use tracing::info;
 
 #[tokio::main]

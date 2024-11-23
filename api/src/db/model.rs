@@ -3,11 +3,11 @@
 #![allow(unused)]
 #![allow(clippy::all)]
 
-use chrono::offset::Utc;
 use chrono::DateTime;
+use chrono::offset::Utc;
 use diesel::{
-    prelude::{AsChangeset, Associations, Identifiable, Insertable},
     Queryable, Selectable,
+    prelude::{AsChangeset, Associations, Identifiable, Insertable},
 };
 #[derive(Queryable, Debug, Selectable, Insertable, Identifiable, PartialEq, Default)]
 #[diesel(check_for_backend(diesel::pg::Pg))]

@@ -138,10 +138,16 @@ pub mod context_type {
         fn validate(&self) -> Result<(), String> {
             #[allow(clippy::len_zero)]
             if self.0.len() < 2 {
-                return Err(format!("MinLength validation error. \nExpected: 0 length >= 2 \nActual: 0 length == {}", self.0.len()));
+                return Err(format!(
+                    "MinLength validation error. \nExpected: 0 length >= 2 \nActual: 0 length == {}",
+                    self.0.len()
+                ));
             }
             if self.0.len() > 8 {
-                return Err(format!("MaxLength validation error. \nExpected: 0 length <= 8 \nActual: 0 length == {}", self.0.len()));
+                return Err(format!(
+                    "MaxLength validation error. \nExpected: 0 length <= 8 \nActual: 0 length == {}",
+                    self.0.len()
+                ));
             }
             Ok(())
         }
@@ -267,7 +273,10 @@ pub mod shipment_type {
     impl Validate for OrderNo {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 15 {
-                return Err(format!("MaxLength validation error. \nExpected: 0 length <= 15 \nActual: 0 length == {}", self.0.len()));
+                return Err(format!(
+                    "MaxLength validation error. \nExpected: 0 length <= 15 \nActual: 0 length == {}",
+                    self.0.len()
+                ));
             }
             Ok(())
         }
@@ -279,7 +288,10 @@ pub mod shipment_type {
     impl Validate for CustomerNo {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 9 {
-                return Err(format!("MaxLength validation error. \nExpected: 0 length <= 9 \nActual: 0 length == {}", self.0.len()));
+                return Err(format!(
+                    "MaxLength validation error. \nExpected: 0 length <= 9 \nActual: 0 length == {}",
+                    self.0.len()
+                ));
             }
             Ok(())
         }
@@ -291,10 +303,16 @@ pub mod shipment_type {
     impl Validate for ParcelCount {
         fn validate(&self) -> Result<(), String> {
             if self.0 < "1".parse::<i32>().unwrap() {
-                return Err(format!("MinInclusive validation error: invalid value of 0! \nExpected: 0 >= 1.\nActual: 0 == {}", self.0));
+                return Err(format!(
+                    "MinInclusive validation error: invalid value of 0! \nExpected: 0 >= 1.\nActual: 0 == {}",
+                    self.0
+                ));
             }
             if self.0 > "99".parse::<i32>().unwrap() {
-                return Err(format!("MaxInclusive validation error: invalid value of 0! \nExpected: 0 <= 99.\nActual: 0 == {}", self.0));
+                return Err(format!(
+                    "MaxInclusive validation error: invalid value of 0! \nExpected: 0 <= 99.\nActual: 0 == {}",
+                    self.0
+                ));
             }
             Ok(())
         }
@@ -411,7 +429,10 @@ pub mod parcel_type {
     impl Validate for Content {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 40 {
-                return Err(format!("MaxLength validation error. \nExpected: 0 length <= 40 \nActual: 0 length == {}", self.0.len()));
+                return Err(format!(
+                    "MaxLength validation error. \nExpected: 0 length <= 40 \nActual: 0 length == {}",
+                    self.0.len()
+                ));
             }
             Ok(())
         }
@@ -518,7 +539,10 @@ pub mod address_type {
     impl Validate for Title {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 30 {
-                return Err(format!("MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}", self.0.len()));
+                return Err(format!(
+                    "MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}",
+                    self.0.len()
+                ));
             }
             Ok(())
         }
@@ -532,7 +556,10 @@ pub mod address_type {
     impl Validate for Firstname {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 30 {
-                return Err(format!("MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}", self.0.len()));
+                return Err(format!(
+                    "MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}",
+                    self.0.len()
+                ));
             }
             Ok(())
         }
@@ -546,7 +573,10 @@ pub mod address_type {
     impl Validate for Lastname {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 30 {
-                return Err(format!("MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}", self.0.len()));
+                return Err(format!(
+                    "MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}",
+                    self.0.len()
+                ));
             }
             Ok(())
         }
@@ -560,7 +590,10 @@ pub mod address_type {
     impl Validate for HouseNo {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 10 {
-                return Err(format!("MaxLength validation error. \nExpected: 0 length <= 10 \nActual: 0 length == {}", self.0.len()));
+                return Err(format!(
+                    "MaxLength validation error. \nExpected: 0 length <= 10 \nActual: 0 length == {}",
+                    self.0.len()
+                ));
             }
             // check every street number possible for street ?
             Ok(())
@@ -593,7 +626,10 @@ pub mod address_type {
     impl Validate for PostCode {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 10 {
-                return Err(format!("MaxLength validation error. \nExpected: 0 length <= 10 \nActual: 0 length == {}", self.0.len()));
+                return Err(format!(
+                    "MaxLength validation error. \nExpected: 0 length <= 10 \nActual: 0 length == {}",
+                    self.0.len()
+                ));
             }
             // check every postal code ?
             Ok(())
@@ -608,7 +644,10 @@ pub mod address_type {
     impl Validate for City {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 30 {
-                return Err(format!("MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}", self.0.len()));
+                return Err(format!(
+                    "MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}",
+                    self.0.len()
+                ));
             }
             // check that city correspond to postal code ?
             Ok(())
@@ -623,7 +662,10 @@ pub mod address_type {
     impl Validate for AddressAdd1 {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 30 {
-                return Err(format!("MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}", self.0.len()));
+                return Err(format!(
+                    "MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}",
+                    self.0.len()
+                ));
             }
             Ok(())
         }
@@ -637,7 +679,10 @@ pub mod address_type {
     impl Validate for AddressAdd2 {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 30 {
-                return Err(format!("MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}", self.0.len()));
+                return Err(format!(
+                    "MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}",
+                    self.0.len()
+                ));
             }
             Ok(())
         }
@@ -651,7 +696,10 @@ pub mod address_type {
     impl Validate for AddressAdd3 {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 30 {
-                return Err(format!("MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}", self.0.len()));
+                return Err(format!(
+                    "MaxLength validation error. \nExpected: 0 length <= 30 \nActual: 0 length == {}",
+                    self.0.len()
+                ));
             }
             Ok(())
         }
@@ -665,7 +713,10 @@ pub mod address_type {
     impl Validate for PhoneNo {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 20 {
-                return Err(format!("MaxLength validation error. \nExpected: 0 length <= 20 \nActual: 0 length == {}", self.0.len()));
+                return Err(format!(
+                    "MaxLength validation error. \nExpected: 0 length <= 20 \nActual: 0 length == {}",
+                    self.0.len()
+                ));
             }
             Ok(())
         }
@@ -679,7 +730,10 @@ pub mod address_type {
     impl Validate for MobileNo {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 20 {
-                return Err(format!("MaxLength validation error. \nExpected: 0 length <= 20 \nActual: 0 length == {}", self.0.len()));
+                return Err(format!(
+                    "MaxLength validation error. \nExpected: 0 length <= 20 \nActual: 0 length == {}",
+                    self.0.len()
+                ));
             }
             Ok(())
         }
@@ -693,7 +747,10 @@ pub mod address_type {
     impl Validate for Email {
         fn validate(&self) -> Result<(), String> {
             if self.0.len() > 70 {
-                return Err(format!("MaxLength validation error. \nExpected: 0 length <= 70 \nActual: 0 length == {}", self.0.len()));
+                return Err(format!(
+                    "MaxLength validation error. \nExpected: 0 length <= 70 \nActual: 0 length == {}",
+                    self.0.len()
+                ));
             }
             Ok(())
         }

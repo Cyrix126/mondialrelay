@@ -1,12 +1,12 @@
-use axum::{routing::get, Router};
+use axum::{Router, routing::get};
 use config::Config;
 use db::migration::run_migrations;
 use deadpool_diesel::postgres::Pool;
 use get_pass::get_password;
 use handler::{label, shipment};
 use reqwest::{
-    header::{self, ACCEPT, CONTENT_TYPE},
     Client, ClientBuilder,
+    header::{self, ACCEPT, CONTENT_TYPE},
 };
 
 pub mod config;

@@ -1,5 +1,5 @@
 use deadpool_diesel::postgres::Pool;
-use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
+use diesel_migrations::{EmbeddedMigrations, MigrationHarness, embed_migrations};
 const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
 pub async fn run_migrations(pool: &Pool) -> anyhow::Result<()> {
     let conn = pool.get().await?;

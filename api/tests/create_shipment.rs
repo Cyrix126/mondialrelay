@@ -7,14 +7,15 @@ use deadpool_diesel::postgres::Pool;
 use diesel::RunQueryDsl;
 use get_pass::get_password;
 use mondialrelay_api_lib::{
+    AppState,
     config::{AddressBusiness, Config},
     db::schema::shipments,
     handler::NewShipment,
     request::{
-        address_type::{City, CountryCode, Firstname, HouseNo, Lastname, PostCode, Title},
         Address,
+        address_type::{City, CountryCode, Firstname, HouseNo, Lastname, PostCode, Title},
     },
-    router, AppState,
+    router,
 };
 
 #[tokio::test]

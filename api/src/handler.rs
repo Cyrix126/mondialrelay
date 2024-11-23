@@ -1,9 +1,9 @@
 use std::{fs::File, io::Write};
 
 use axum::{
+    Json,
     extract::{Path, State},
     response::IntoResponse,
-    Json,
 };
 use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use serde::{Deserialize, Serialize};
@@ -13,13 +13,13 @@ use xmltree::Element;
 use xsd_parser::generator::validator::Validate;
 
 use crate::{
+    AppState,
     db::{
         model::Shipment,
         schema::shipments::{self},
     },
     error::AppError,
     request::{Address, ShipmentCreationRequest},
-    AppState,
 };
 #[derive(Deserialize, Serialize, Debug)]
 pub struct NewShipment {
@@ -56,13 +56,10 @@ pub async fn shipment(
     shipment.validate().map_err(AppError::Xml)?;
 
     // convert to xml
-    let xml = yaserde::ser::to_string_with_config(
-        &shipment,
-        &yaserde::ser::Config {
-            perform_indent: true,
-            ..Default::default()
-        },
-    )
+    let xml = yaserde::ser::to_string_with_config(&shipment, &yaserde::ser::Config {
+        perform_indent: true,
+        ..Default::default()
+    })
     .expect("invalid UTF-8");
     // send request
     let url = if state.config.test {

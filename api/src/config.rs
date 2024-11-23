@@ -3,9 +3,9 @@ use std::{error::Error, path::PathBuf};
 use url::Url;
 
 use crate::request::{
+    Address, Context,
     address_type::CountryCode,
     context_type::{Culture, CustomerId, VersionAPI},
-    Address, Context,
 };
 
 #[derive(Deserialize, Serialize, Clone)]
