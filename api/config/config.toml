@@ -1,0 +1,30 @@
+## url to connect to your Postgresql database.
+## Do not put the password in clear text here, it will be ignored.
+db_uri = "postgresql://dev@127.0.0.1:5432/mondialrelay"
+## Path of your pass file for the password of the DB 
+db_pass_path = "mondialrelay/dev"
+## Port to which the server will listen
+listen_port = 10200
+## Brand id, given by mondialrelay.
+brand_id = "Your Brand id"
+## API Token, given by mondialrelay.
+password_path = "mondialrelay/api_key"
+## API Test Token, given by mondialrelay.
+password_path_test = "mondialrelay/test_api_key"
+## Which language will be printed the label.
+culture = "en-EN"
+## Format Output of the Label
+format = "A4"
+## Only connect to test API (no charges)
+test = true
+
+## Address of sender (Your Buisnnes)
+[address_sender]
+name_business = "Name of your Business"
+streetname = "Name of Stree"
+house_nb = 36
+country_code = "EN"
+post_code = "00000"
+city = "Your City Name"
+phone_no = "+33000000000"
+email = "buisness@example.net"
