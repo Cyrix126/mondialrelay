@@ -20,6 +20,9 @@ pub enum AppError {
     #[error("Request xml content is not valid from the mondial relay schema: {0}")]
     #[status(axum::http::StatusCode::INTERNAL_SERVER_ERROR)]
     Xml(String),
+    #[error("Response xml from mondialrelay does not contains the label: {0}")]
+    #[status(axum::http::StatusCode::INTERNAL_SERVER_ERROR)]
+    NoLabel(String),
     /// The API response status code is an error.
     #[error(transparent)]
     #[status(axum::http::StatusCode::INTERNAL_SERVER_ERROR)]

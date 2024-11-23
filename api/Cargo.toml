@@ -18,6 +18,7 @@ xsd-macro-utils = {git="https://github.com/Cyrix126/xsd-parser-rs"}
 xsd-parser = {git="https://github.com/Cyrix126/xsd-parser-rs"}
 xsd-types = {git="https://github.com/Cyrix126/xsd-parser-rs"}
 xml = "0.8"
+xmltree = "0.11"
 # configuration file
 get_pass = {git = "https://github.com/Cyrix126/get_pass"}
 confy = "0.6"
@@ -36,11 +37,6 @@ anyhow = "1.0"
 # response, either json (slower, more compatible) or bitcode (faster, rust client needed)
 # bitcode = {version="0.6", features=["serde"]}
 # Miscs
-derive_more = {version="1.0", default-features=false, features=["display"]}
-enclose = "1.2"
-cfg-if ="1.0"
-strum = "0.26"
-strum_macros = "0.26"
 
 # DB
 diesel = { version = "2.2", features = ["postgres", "chrono"] }
@@ -53,3 +49,5 @@ axum-test = "16.3"
 
 [features]
 default=[]
+[package.metadata.cargo-machete]
+ignored = ["xml", "xsd-types"]

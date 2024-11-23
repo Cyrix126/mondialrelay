@@ -1,4 +1,4 @@
-// use std::{fs::File, io::Write};
+use std::{fs::File, io::Write};
 
 use axum::{
     extract::{Path, State},
@@ -9,6 +9,7 @@ use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use serde::{Deserialize, Serialize};
 use tracing::{debug, warn};
 use url::Url;
+use xmltree::Element;
 use xsd_parser::generator::validator::Validate;
 
 use crate::{
@@ -18,7 +19,6 @@ use crate::{
     },
     error::AppError,
     request::{Address, ShipmentCreationRequest},
-    response::ShipmentCreationResponse,
     AppState,
 };
 #[derive(Deserialize, Serialize, Debug)]
@@ -66,35 +66,25 @@ pub async fn shipment(
     .expect("invalid UTF-8");
     // send request
     let url = if state.config.test {
-        "https://connect-api-sandbox.mondialrelay.com/api/shipment"
+        // sandbox doesn't work currently
+        // "https://connect-api-sandbox.mondialrelay.com/api/shipment"
+        "https://connect-api.mondialrelay.com/api/shipment"
     } else {
         "https://connect-api.mondialrelay.com/api/shipment"
     };
     // debug response from test
-    // let mut buffer = File::create("request_generated.xml").unwrap();
-    // buffer.write_all(&xml.clone().into_bytes()).unwrap();
+    let mut buffer = File::create("request_generated.xml").unwrap();
+    buffer.write_all(&xml.clone().into_bytes()).unwrap();
     let resp_xml = state
         .client
         .post(url)
         .body(xml)
         .send()
         .await?
-        .text()
+        .bytes()
         .await?;
-    debug!("response received:\n{}", &resp_xml);
-    let resp =
-        yaserde::de::from_str::<ShipmentCreationResponse>(&resp_xml).map_err(AppError::Xml)?;
-    // check errors/warning in xml
-    let label_url = resp
-        .shipments_list
-        .shipment
-        .first()
-        .expect("every request should have one shipment")
-        .label_list
-        .label
-        .output
-        .clone();
 
+    let label_url = find_label(&resp_xml)?.to_string();
     // save id of order and label url in to db
     // tracking id is included in url of label
     let conn = state.pool.get().await?;
@@ -152,4 +142,26 @@ pub async fn label(
     }
     debug!("Returning label(s) for order n°{}", id_order);
     Ok(Json(labels))
+}
+
+fn find_label(resp_xml: &[u8]) -> Result<Url, AppError> {
+    let element = Element::parse(resp_xml).map_err(|e| AppError::NoLabel(e.to_string()))?;
+    debug!("{:?}", element);
+    Url::parse(
+        element
+            .get_child("ShipmentsList")
+            .ok_or(AppError::NoLabel("No ShipmentsList".to_string()))?
+            .get_child("Shipment")
+            .ok_or(AppError::NoLabel("No Shipment".to_string()))?
+            .get_child("LabelList")
+            .ok_or(AppError::NoLabel("No LabelList".to_string()))?
+            .get_child("Label")
+            .ok_or(AppError::NoLabel("No Label".to_string()))?
+            .get_child("Output")
+            .ok_or(AppError::NoLabel("No Output".to_string()))?
+            .get_text()
+            .ok_or(AppError::NoLabel("No text found".to_string()))?
+            .as_ref(),
+    )
+    .map_err(|e| AppError::NoLabel(e.to_string()))
 }

@@ -14,7 +14,6 @@ pub mod db;
 pub mod error;
 pub mod handler;
 pub mod request;
-pub mod response;
 
 #[derive(Clone)]
 pub struct AppState {
