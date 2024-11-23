@@ -76,7 +76,7 @@ impl Config {
         Ok(Context {
             login,
             password: get_pass::get_password(pass_path)?,
-            customer_id: CustomerId(self.brand_id.clone()),
+            customer_id: CustomerId(brand_id.to_string()),
             culture: Culture(self.culture.clone()),
             version_api: VersionAPI("1.0".to_string()),
         })
